@@ -1,40 +1,56 @@
 body {
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
+    align-items: flex-start;
+    min-height: 100vh;
     margin: 0;
+    padding: 40px 20px;
     font-family: Arial, sans-serif;
     font-size: larger;
+    box-sizing: border-box;
 }
 
 .container {
     text-align: center;
+    width: 100%;
+    max-width: 800px;
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    font-size: 2rem;
 }
 
 .input-group {
-    margin-bottom: 20px;
-}
-
-.status {
-    padding-top: 30px;
-}
-
-.button-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    margin-bottom: 30px;
 }
 
 input[type="text"] {
-    padding: 5px;
-    margin-right: 10px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 18px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #007BFF;
+}
+
+input[type="text"]::placeholder {
+    color: #999;
+}
+
+#add {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 18px;
 }
 
 button {
@@ -42,7 +58,7 @@ button {
     border: none;
     background-color: #007BFF;
     color: #fff;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.2s ease-in-out;
@@ -59,37 +75,86 @@ button:active {
 ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 li {
     display: flex;
-    justify-content: space-evenly;
     align-items: center;
-    margin-bottom: 5px;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
 }
 
-span {
+li:hover {
+    background-color: #eee;
+}
+
+li a {
     flex-grow: 1;
+    text-align: left;
+    font-size: 16px;
     overflow-wrap: break-word;
+    color: #c00;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+li a:hover {
+    color: #ff0000;
+    text-decoration: underline;
 }
 
 .removeButton {
-    padding: 5px 10px;
-    background-color: #FF0000;
+    padding: 6px 12px;
+    background-color: #FF4444;
     color: #fff;
     border: none;
-    border-radius: 50%;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
     font-size: 14px;
     transition: background-color 0.2s ease-in-out;
-    align-self: center;
+    flex-shrink: 0;
 }
 
 .removeButton:hover {
-    background-color: #b30000;
+    background-color: #cc0000;
 }
 
 .removeButton:active {
-    background-color: #800000;
+    background-color: #990000;
+}
+
+/* Toast notification styles */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 12px 24px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast-success {
+    background-color: #10b981;
+}
+
+.toast-error {
+    background-color: #ef4444;
 }

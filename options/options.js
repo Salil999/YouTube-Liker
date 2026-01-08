@@ -1,79 +1,120 @@
+// Toast notification system
+const showToast = (message, type = 'success') => {
+    // Remove any existing toast
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    // Remove after 2 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
+};
+
 const addSubscriber = () => {
-    // Basic validation
-    const newItemText = document.getElementById('new-subscriber').value
-    if (newItemText.trim() === '') {
-        alert('Please enter a YouTube Channel!')
-        return
+    const input = document.getElementById('new-subscriber');
+    const newItemText = input.value.trim();
+    
+    if (newItemText === '') {
+        showToast('Please enter a YouTube channel!', 'error');
+        return;
     }
 
     // Add item on page
-    addItemOnPage(newItemText)
+    addItemOnPage(newItemText);
 
     // Clear the input field
-    document.getElementById('new-subscriber').value = ''
-}
+    input.value = '';
+
+    // Auto-save
+    saveOptions();
+};
+
+// Generate YouTube channel URL from subscriber entry
+const getChannelUrl = (subscriber) => {
+    // Check if it looks like a handle (starts with @ or is a single word without spaces)
+    const trimmed = subscriber.trim();
+    const isHandle = trimmed.startsWith('@') || /^[a-zA-Z0-9_-]+$/.test(trimmed);
+    
+    if (isHandle) {
+        // Remove @ if present and create handle URL
+        const handle = trimmed.replace(/^@/, '');
+        return `https://www.youtube.com/@${handle}`;
+    } else {
+        // It's a channel name - search with channel filter (sp=EgIQAg%3D%3D filters to channels only)
+        return `https://www.youtube.com/results?search_query=${encodeURIComponent(trimmed)}&sp=EgIQAg%3D%3D`;
+    }
+};
 
 // Save the items to Chrome's sync storage
 const saveOptions = () => {
-    const itemList = document.getElementById('subscriber-list')
-    const subscribers = []
-    for (let i = 0; i < itemList.children.length; i++) {
-        // Children are the remove button and the span
-        // The span contains the subscriber name
-        const li = itemList.children[i]
-        const span = li.children[1]
-        const subscriber = span.innerHTML
-        subscribers.push(subscriber)
+    const itemList = document.getElementById('subscriber-list');
+    const subscribers = [];
+    
+    for (const li of itemList.children) {
+        const link = li.querySelector('a');
+        if (link) {
+            subscribers.push(link.textContent);
+        }
     }
 
     chrome.storage.sync.set({ subscriberList: subscribers }, () => {
-        alert('Subscriber list saved!')
-    })
-}
+        showToast('Saved!', 'success');
+    });
+};
 
 const loadOptions = () => {
     chrome.storage.sync.get(['subscriberList'], (result) => {
-        const subscribers = result.subscriberList
+        const subscribers = result.subscriberList;
         if (!subscribers) {
-            return
+            return;
         }
-        for (let i = 0; i < subscribers.length; i++) {
-            const subscriber = subscribers[i]
-            addItemOnPage(subscriber)
+        for (const subscriber of subscribers) {
+            addItemOnPage(subscriber);
         }
-    })
-}
+    });
+};
 
 const addItemOnPage = (subscriber) => {
-    const itemList = document.getElementById('subscriber-list')
-    const li = document.createElement('li')
+    const itemList = document.getElementById('subscriber-list');
+    const li = document.createElement('li');
 
-    const span = document.createElement('span')
-    span.textContent = subscriber
+    const link = document.createElement('a');
+    link.textContent = subscriber;
+    link.href = getChannelUrl(subscriber);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
 
-    const removeButton = document.createElement('button')
-    removeButton.className = 'removeButton'
-    removeButton.textContent = 'X'
+    const removeButton = document.createElement('button');
+    removeButton.className = 'removeButton';
+    removeButton.innerHTML = '&times;';
     removeButton.onclick = () => {
-        removeItemOnPage(li)
-    }
+        li.remove();
+        saveOptions(); // Auto-save on remove
+    };
 
-    li.appendChild(removeButton)
-    li.appendChild(span)
-
-    itemList.appendChild(li)
-}
-
-const removeItemOnPage = (listItem) => {
-    listItem.remove()
-}
+    li.appendChild(removeButton);
+    li.appendChild(link);
+    itemList.appendChild(li);
+};
 
 // Event listeners
-document.addEventListener('DOMContentLoaded', loadOptions)
-document.getElementById('save').addEventListener('click', saveOptions)
-document.getElementById('add').addEventListener('click', addSubscriber)
-document.getElementById('new-subscriber').addEventListener('keydown', (keyboardEvent) => {
-    if (keyboardEvent.key === 'Enter') {
-        addSubscriber()
+document.addEventListener('DOMContentLoaded', loadOptions);
+document.getElementById('add').addEventListener('click', addSubscriber);
+document.getElementById('new-subscriber').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        addSubscriber();
     }
-})
+});
